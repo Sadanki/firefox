@@ -109,6 +109,31 @@ Execution context
 
 Code that you have executed becomes part of the execution context, regardless of what editing mode you were in when you executed it. For example, if you type a function definition in the multi-line editor, and click **Run**, you can switch to single-line mode and still use your function.
 
+Evaluation context selector
+****************************
+
+The evaluation context selector allows you to choose which JavaScript context to evaluate your expressions in. By default, expressions are evaluated in the context of the top-level window, but you can select different contexts when working with iframes, web workers, or other execution contexts.
+
+.. image:: web_console_context_selector.png
+  :alt: The Web Console showing the evaluation context selector
+  :class: center
+
+The context selector appears as a dropdown menu in the Web Console toolbar, typically showing "Top" when evaluating in the main window context. Click the dropdown to see and select from available contexts:
+
+- **Top**: The main window context (default)
+- **Iframe contexts**: Any iframes present on the page, labeled by their source or name
+- **Worker contexts**: Web Workers, Service Workers, or other worker threads
+
+When you select a different context, all subsequent expressions you evaluate will run in that context until you switch back. This is useful when you need to:
+
+- Debug code running in a specific iframe
+- Inspect variables or execute code in a web worker
+- Test how code behaves in different execution contexts
+
+The selected context persists throughout your debugging session, so you don't need to reselect it for each expression.
+
+.. note::
+  The available contexts depend on the page you're debugging. If the page doesn't contain any iframes or workers, only the "Top" context will be available.
 
 Syntax highlighting
 *******************
