@@ -12,11 +12,28 @@ endif
 ifeq (cocoa,$(MOZ_WIDGET_TOOLKIT)) #{
 
 # Define a reusable macro for creating child process apps
+# Arguments:
+#   $1 - Process name (e.g., plugin-container)
+#   $2 - Executable name (branded version)
+#   $3 - Bundle ID (e.g., org.mozilla.plugincontainer)
+#   $4 - App display name (for CFBundleName in InfoPlist.strings)
 define make_child_app
 	$(NSINSTALL) -D $(DIST)/bin/$1.app
 	rsync -a -C --exclude '*.in' $(srcdir)/macbuild/Contents $(DIST)/bin/$1.app
-	$(call py_action,preprocessor $1.app/Contents/Info.plist,-Fsubstitution -DEXECUTABLE='$2' -DBUNDLEID='$3' -DMOZ_DEVELOPER_REPO_PATH='$(topsrcdir)' -DMOZ_DEVELOPER_OBJ_PATH='$(topobjdir)' $(srcdir)/macbuild/Contents/Info.plist.in -o $(DIST)/bin/$1.app/Contents/Info.plist)
-	$(call py_action,preprocessor $1.app/Contents/Resources/English.lproj/InfoPlist.strings,-Fsubstitution --output-encoding utf-16 -DAPP_NAME='$4' $(srcdir)/macbuild/Contents/Resources/English.lproj/InfoPlist.strings.in -o $(DIST)/bin/$1.app/Contents/Resources/English.lproj/InfoPlist.strings)
+	$(call py_action,preprocessor \
+		$1.app/Contents/Info.plist,-Fsubstitution \
+		-DEXECUTABLE='$2' \
+		-DBUNDLEID='$3' \
+		-DMOZ_DEVELOPER_REPO_PATH='$(topsrcdir)' \
+		-DMOZ_DEVELOPER_OBJ_PATH='$(topobjdir)' \
+		$(srcdir)/macbuild/Contents/Info.plist.in \
+		-o $(DIST)/bin/$1.app/Contents/Info.plist)
+	$(call py_action,preprocessor \
+		$1.app/Contents/Resources/English.lproj/InfoPlist.strings,-Fsubstitution \
+		--output-encoding utf-16 \
+		-DAPP_NAME='$4' \
+		$(srcdir)/macbuild/Contents/Resources/English.lproj/InfoPlist.strings.in \
+		-o $(DIST)/bin/$1.app/Contents/Resources/English.lproj/InfoPlist.strings)
 	$(NSINSTALL) -D $(DIST)/bin/$1.app/Contents/MacOS
 endef
 
@@ -26,10 +43,14 @@ libs::
 	$(NSINSTALL) $(DIST)/bin/$(MOZ_CHILD_PROCESS_NAME) $(DIST)/bin/$(MOZ_CHILD_PROCESS_NAME).app/Contents/MacOS
 
 	# media-plugin-helper
-	$(call make_child_app,$(MOZ_EME_PROCESS_NAME),$(MOZ_EME_PROCESS_NAME_BRANDED),$(MOZ_EME_PROCESS_BUNDLEID),$(MOZ_EME_PROCESS_BUNDLENAME))
+	$(call make_child_app,$(MOZ_EME_PROCESS_NAME),$(MOZ_EME_PROCESS_NAME_BRANDED),$(MOZ_EME_PROCESS_BUNDLEID),$(MOZ_EME_PROCESS_NAME_BRANDED))
 	cp $(DIST)/bin/$(MOZ_CHILD_PROCESS_NAME) "$(DIST)/bin/$(MOZ_EME_PROCESS_NAME).app/Contents/MacOS/$(MOZ_EME_PROCESS_NAME_BRANDED)"
 
 	# gpu-helper
+	# MOZ_GPU_PROCESS_NAME = gpu-helper
+	# MOZ_GPU_PROCESS_NAME_BRANDED = Nightly GPU Helper
+	# MOZ_GPU_PROCESS_NAME_BUNDLENAME = gpu-helper.app
+	# MOZ_GPU_PROCESS_BUNDLEID = org.mozilla.nightly-gpu-helper
 	$(call make_child_app,$(MOZ_GPU_PROCESS_NAME),$(MOZ_GPU_PROCESS_NAME_BRANDED),$(MOZ_GPU_PROCESS_BUNDLEID),$(MOZ_GPU_PROCESS_NAME_BRANDED))
 	cp $(DIST)/bin/$(MOZ_CHILD_PROCESS_NAME) "$(DIST)/bin/$(MOZ_GPU_PROCESS_NAME).app/Contents/MacOS/$(MOZ_GPU_PROCESS_NAME_BRANDED)"
 
